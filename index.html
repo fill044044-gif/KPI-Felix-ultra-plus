@@ -1,0 +1,504 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes" />
+  <title>Система мотивации | Кафе-пекарни | Мобильная версия</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #03050b;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #edf2ff;
+      overflow-x: hidden;
+    }
+
+    /* фон */
+    .bg-aura {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.12), transparent 35%),
+                  radial-gradient(circle at 90% 40%, rgba(56, 189, 248, 0.1), transparent 40%),
+                  radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.08), transparent 35%),
+                  linear-gradient(145deg, #0a0f1e 0%, #050914 100%);
+    }
+
+    .bg-aura::after {
+      content: '';
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(80px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* progress bar */
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      z-index: 200;
+    }
+    .progress__bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #fb7185, #38bdf8);
+      box-shadow: 0 0 12px #f59e0b;
+      transition: width 0.12s linear;
+    }
+
+    /* навигация на десктопе — показываем, на мобиле скрываем */
+    .nav {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 99;
+    }
+    .nav a {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+    .nav a.active {
+      background: #f59e0b;
+      transform: scale(1.5);
+      box-shadow: 0 0 10px #f59e0b;
+    }
+
+    /* слайды */
+    .slide {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 56px 20px;
+      position: relative;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .slide__inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.6s ease;
+    }
+    .slide__inner.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* типографика — адаптивные размеры */
+    .kicker {
+      display: inline-flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+      padding: 5px 12px;
+      border-radius: 40px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #f59e0b;
+      border: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(34px, 8vw, 68px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: clamp(26px, 5.5vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 16px;
+    }
+    h3 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    p, li {
+      font-size: 16px;
+      line-height: 1.48;
+      color: #ccd6f6;
+    }
+    .accent { color: #f59e0b; }
+    .green { color: #22c55e; }
+    .blue { color: #38bdf8; }
+
+    /* карточки и стекло */
+    .card, .stat-card, .sim-card, .table-wrap, .visual-card {
+      background: rgba(12, 20, 35, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 28px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .stat-card {
+      text-align: center;
+      padding: 16px 12px;
+    }
+    .stat-card .value {
+      font-size: clamp(28px, 6vw, 38px);
+      font-weight: 800;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #fff, #f59e0b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .small {
+      font-size: 12px;
+      opacity: 0.75;
+    }
+
+    /* сетки — мобильная адаптация */
+    .grid-2, .grid-3, .grid-4 {
+      display: grid;
+      gap: 18px;
+    }
+    @media (min-width: 768px) {
+      .grid-2 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 767px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+
+    /* таблицы — горизонтальный скролл на мобиле */
+    .table-wrap {
+      overflow-x: auto;
+      padding: 0;
+      background: rgba(0,0,0,0.35);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 540px;
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+    th {
+      color: #f59e0b;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+    }
+    td {
+      font-size: 13px;
+    }
+
+    /* интерактивные слайдеры */
+    .sim-card input[type="range"] {
+      width: 100%;
+      background: #2d3748;
+      height: 5px;
+      border-radius: 10px;
+      -webkit-appearance: none;
+      margin: 12px 0;
+    }
+    input[type="range"]:focus { outline: none; }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #f59e0b;
+      cursor: pointer;
+      box-shadow: 0 0 8px #f59e0b;
+      border: none;
+    }
+    .result-value {
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 12px;
+    }
+
+    /* диаграммы */
+    .chart-modern {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      justify-content: center;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+    .bar-item {
+      flex: 1;
+      min-width: 70px;
+      text-align: center;
+    }
+    .bar-fill {
+      background: linear-gradient(0deg, #f59e0b, #fb7185);
+      width: 100%;
+      border-radius: 16px 16px 8px 8px;
+      transition: height 0.3s;
+      min-height: 6px;
+    }
+    .bar-fill.green { background: linear-gradient(0deg, #22c55e, #a3e635); }
+    .bar-fill.blue { background: linear-gradient(0deg, #3b82f6, #60a5fa); }
+
+    /* заметка */
+    .note {
+      margin-top: 20px;
+      background: rgba(0,0,0,0.3);
+      border-left: 3px solid #f59e0b;
+      padding: 14px 16px;
+      border-radius: 20px;
+      font-size: 15px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .pill {
+      background: rgba(255,255,255,0.08);
+      border-radius: 40px;
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 12px;
+      right: 18px;
+      font-size: 10px;
+      opacity: 0.35;
+      letter-spacing: 1px;
+    }
+
+    /* Скрываем навигационные точки на мобильных */
+    @media (max-width: 860px) {
+      .nav {
+        display: none;
+      }
+      .slide {
+        padding: 40px 16px;
+      }
+      .card, .stat-card, .sim-card, .visual-card {
+        padding: 18px;
+      }
+      .result-value {
+        font-size: 24px;
+      }
+      .bar-item {
+        min-width: 55px;
+      }
+    }
+
+    /* дополнительная оптимизация для очень маленьких */
+    @media (max-width: 480px) {
+      h3 {
+        font-size: 20px;
+      }
+      .stat-card .value {
+        font-size: 26px;
+      }
+      .kicker {
+        font-size: 9px;
+        padding: 4px 10px;
+      }
+      .slide {
+        padding: 32px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-aura"></div>
+<div class="progress"><div class="progress__bar" id="progressBar"></div></div>
+
+<nav class="nav">
+  <a href="#s1" data-target="s1"></a><a href="#s2" data-target="s2"></a><a href="#s3" data-target="s3"></a>
+  <a href="#s4" data-target="s4"></a><a href="#s5" data-target="s5"></a><a href="#s6" data-target="s6"></a>
+  <a href="#s7" data-target="s7"></a><a href="#s8" data-target="s8"></a><a href="#s9" data-target="s9"></a>
+  <a href="#s10" data-target="s10"></a><a href="#s11" data-target="s11"></a><a href="#s12" data-target="s12"></a>
+</nav>
+
+<!-- SLIDE 1 -->
+<section class="slide" id="s1"><div class="slide__inner"><div class="grid-2" style="align-items:center"><div><div class="kicker">⚡ новая эра мотивации</div><h1>Зарплата = результат<br><span class="accent">Честно и прозрачно</span></h1><p>Презентация системы, где каждый — от кассира до операционного директора — получает деньги за реальный вклад в прибыль сети кафе-пекарен.</p><div class="grid-4" style="margin-top: 28px"><div class="stat-card"><div class="value">15.3M ₽</div><div class="small">Выручка сети/мес</div></div><div class="stat-card"><div class="value">+25%</div><div class="small">ФОТ от выручки</div></div><div class="stat-card"><div class="value">180 ₽</div><div class="small">тек. средний чек</div></div><div class="stat-card"><div class="value">7 точек</div><div class="small">+ цех</div></div></div></div><div class="visual-card" style="text-align:center"><svg width="100%" height="240" viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="240" fill="none"/><circle cx="200" cy="100" r="40" fill="url(#grad1)" /><path d="M130 160c28-30 112-30 140 0" stroke="#f59e0b" stroke-width="10" fill="none"/><text x="200" y="215" fill="#ccc" font-size="13" text-anchor="middle">⬆️ Рост чека → рост зарплаты</text><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fb7185"/></linearGradient></defs></svg></div></div></div><div class="footer">01</div></section>
+
+<!-- SLIDE 2 -->
+<section class="slide" id="s2"><div class="slide__inner"><div class="kicker">📊 Исходные данные</div><h2>На чём строится новая модель</h2><div class="grid-3"><div class="card"><h3>🏭 Структура</h3><ul><li>7 точек продаж</li><li>3 пекарни полного цикла отгружают 3 буфета</li><li>1 пекарня без отгрузки</li><li>Собственный заготовочный цех</li></ul></div><div class="card"><h3>📈 Рычаги роста</h3><ul><li>Средний чек: <span class="accent">180 → 200 ₽</span></li><li>Допродажи «золотых» позиций</li><li>Маржинальность ассортимента</li></ul></div><div class="card"><h3>🎯 Вывод</h3><p>Главный драйвер — <strong>средний чек и структура продаж</strong>. Это управляемый KPI, который напрямую увеличивает прибыль.</p></div></div><div class="note" style="margin-top:22px">✅ Платим не за активность, а за конкретные действия, которые создают деньги сети.</div></div><div class="footer">02</div></section>
+
+<!-- SLIDE 3 -->
+<section class="slide" id="s3"><div class="slide__inner"><div class="kicker">⚠️ Проблема</div><h2>Почему прошлая модель не работала</h2><div class="grid-2"><div class="card"><h3 class="accent">Было</h3><ul><li>Сложные, субъективные KPI</li><li>Отсутствие фокуса на среднем чеке</li><li>Нет стимула продавать напитки и маржинальные позиции</li></ul></div><div class="card"><h3 class="green">Результат</h3><ul><li>Кассиры не понимали, как влиять на доход</li><li>Прибыль компании была ниже потенциала</li><li>Маржинальные товары продавались плохо</li></ul></div></div><div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:28px"><span class="card" style="padding:12px 16px">🚫 KPI ради KPI</span><span>→</span><span class="card" style="padding:12px 16px; background:#f59e0b20">✅ Деньги за результат</span></div></div><div class="footer">03</div></section>
+
+<!-- SLIDE 4: ABC -->
+<section class="slide" id="s4"><div class="slide__inner"><div class="kicker">🏅 ABC-ассортимент</div><h2>«Золото» vs база</h2><div class="grid-3"><div class="card"><h3>🥖 База</h3><p>Хлеб, пироги, сосиска в тесте, беляш</p><div class="small">формируют ядро, но не маржинальный центр</div></div><div class="card" style="border-top:3px solid #f59e0b"><h3 class="accent">✨ Золото</h3><p>Напитки, авторские пироги, пицца, десерты — высокий вклад в прибыль</p><div class="pill-row"><span class="pill">+50% маржинальности</span></div></div><div class="card"><h3>🍂 Хвост</h3><p>Позиции с низким оборотом — убираем из фокуса</p></div></div><div class="note" style="margin-top:20px"><span class="accent">🔁 Мотивация привязана к продажам «золота» — каждый кассир заинтересован предлагать правильные товары.</span></div></div><div class="footer">04</div></section>
+
+<!-- SLIDE 5: таблица ролей -->
+<section class="slide" id="s5"><div class="slide__inner"><div class="kicker">🎯 Кто за что отвечает</div><h2>Прозрачная матрица ролей</h2><div class="table-wrap"><table><thead><tr><th>Роль</th><th>Главная цель</th><th>Ключевой драйвер</th><th>Формула</th></tr></thead><tbody><tr><td>Кассир</td><td>Повышать чек, допродажи золота</td><td>Средний чек + кол-во золота</td><td>Оклад + бонус за чек + за золото</td></tr><tr><td>Управляющий</td><td>Прибыль точки и KPI продаж</td><td>Чек, доля золота, ФОТ%</td><td>80k + KPI-матрица + 5% GP</td></tr><tr><td>Операционный директор</td><td>Рост прибыли сети</td><td>GP сети, средний чек, доля золота</td><td>120k + KPI + 5–7% роста GP</td></tr></tbody></table></div></div><div class="footer">05</div></section>
+
+<!-- SLIDE 6: Кассир + интерактив -->
+<section class="slide" id="s6"><div class="slide__inner"><div class="kicker">💸 Мотивация кассира</div><h2>Как заработать больше на кассе</h2><div class="grid-2"><div class="card"><h3>Правила бонусов</h3><ul><li>Чек <180₽ → бонус 0</li><li>Чек 180–199₽ → +7000₽/мес</li><li>Чек ≥200₽ → +14000₽/мес</li><li>Дополнительно: <span class="accent">12₽ за каждую проданную единицу «золота» в смену</span> × 22 дня</li></ul></div><div class="sim-card"><h3>🧮 Калькулятор зарплаты кассира</h3><label>Средний чек (₽): <strong id="checkValue">180</strong></label><input type="range" id="avgCheckSlider" min="150" max="230" step="1" value="180"><label>Продано «золота» в день (шт): <strong id="goldQty">8</strong></label><input type="range" id="goldSlider" min="0" max="30" step="1" value="8"><div class="result-value" id="cashierBonusDisplay">+0 ₽ бонус</div><div class="small">*Оклад 45 000₽ + бонусы. Пример: за чек и допродажи</div></div></div><div class="note" style="margin-top:16px">⭐ Предлагайте напиток, вторую позицию — каждая продажа золота приносит реальные деньги.</div></div><div class="footer">06</div></section>
+
+<!-- SLIDE 7: Управляющий + интерактив -->
+<section class="slide" id="s7"><div class="slide__inner"><div class="kicker">👨‍🍳 Управляющий точкой</div><h2>KPI-матрица + бонус за прибыль</h2><div class="grid-2"><div><div class="table-wrap"><table><th>KPI</th><th>Вес</th><th>Макс. выплата</th></tr><tr><td>Средний чек</td><td>40%</td><td>32 000₽</td></tr><tr><td>Доля золота</td><td>30%</td><td>12 000₽</td></tr><tr><td>ФОТ% ≤25%</td><td>20%</td><td>8 000₽</td></tr><tr><td>Выручка</td><td>10%</td><td>4 000₽</td></tr></table></div><div class="small" style="margin-top:12px">Фикс 80 000₽ + KPI + 5% от прироста GP точки.</div></div><div class="sim-card"><h3>📈 Симулятор зарплаты управляющего</h3><label>Средний чек (₽): <span id="manCheckVal">180</span></label><input type="range" id="manCheck" min="160" max="220" value="180"><label>Доля золота (%): <span id="manGoldVal">28</span>%</label><input type="range" id="manGold" min="20" max="45" value="28"><label>Прирост GP точки (₽ тыс): <span id="manGpVal">0</span></label><input type="range" id="manGp" min="0" max="800" value="0"><div class="result-value" id="managerSalaryResult">80 000 ₽</div><div class="small">Фикс + KPI + доля от прироста (5%)</div></div></div></div><div class="footer">07</div></section>
+
+<!-- SLIDE 8: Операционный директор -->
+<section class="slide" id="s8"><div class="slide__inner"><div class="kicker">📡 Операционный директор</div><h2>Стратегическая мотивация</h2><div class="grid-2"><div class="card"><h3>KPI (бонус до 60k)</h3><ul><li>Валовая прибыль сети (40%)</li><li>Средний чек (30%)</li><li>Доля золота (20%)</li><li>ФОТ% (10%)</li></ul><p class="small">Фикс 120 000₽ + 5–7% от роста прибыли сети</p></div><div class="visual-card"><div class="chart-modern" id="directorChartStatic"><div class="bar-item"><div class="bar-fill" style="height:70px"></div><div>База</div><div>120k</div></div><div class="bar-item"><div class="bar-fill green" style="height:105px"></div><div>+500k GP</div><div>165k</div></div><div class="bar-item"><div class="bar-fill blue" style="height:145px"></div><div>+1M GP</div><div>200k</div></div><div class="bar-item"><div class="bar-fill" style="height:175px; background:linear-gradient(0deg,#f59e0b,#f97316)"></div><div>+1.5M GP</div><div>231k</div></div></div></div></div><div class="note">Рост валовой прибыли сети → рост зарплаты ОД.</div></div><div class="footer">08</div></section>
+
+<!-- SLIDE 9: Финансовое обоснование + интерактив -->
+<section class="slide" id="s9"><div class="slide__inner"><div class="kicker">💰 Экономика</div><h2>Почему компании выгодно</h2><div class="sim-card" style="margin-bottom:20px"><h3>📊 Рост чека → дополнительная прибыль</h3><label>Новый средний чек (₽): <strong id="newCheckSpan">200</strong></label><input type="range" id="profitCheckSlider" min="180" max="215" step="1" value="200"><div class="grid-2" style="margin-top:16px"><div><div>📈 Доп. выручка: <span class="accent" id="extraRevenue">+1.71M</span> ₽</div><div>💰 Доп. валовая прибыль: <span class="green" id="extraGross">+765k</span> ₽</div></div><div>🎁 Бонусы команде: ~ <span id="bonusEstimate">300k</span> ₽<br>✅ Чистый эффект: <strong id="netEffect">+465k</strong> ₽</div></div></div><div style="text-align:center; margin-top:12px"><span class="card" style="display:inline-block; padding:10px 18px">Рост чека + доля золота = 🔥 ROI положительный</span></div></div><div class="footer">09</div></section>
+
+<!-- SLIDE 10: потенциал управляющего -->
+<section class="slide" id="s10"><div class="slide__inner"><div class="kicker">📈 Возможности роста</div><h2>Зарплата управляющего: от 80k до 139k+</h2><div class="grid-4"><div class="stat-card"><div class="value">80k</div><div>Базовый уровень</div></div><div class="stat-card"><div class="value green">105k</div><div>+200k GP точки</div></div><div class="stat-card"><div class="value blue">120k</div><div>+400k GP</div></div><div class="stat-card"><div class="value accent">139k+</div><div>+700k GP</div></div></div><div class="visual-card"><div class="chart-modern"><div class="bar-item"><div class="bar-fill" style="height:58px"></div><div>80k</div></div><div class="bar-item"><div class="bar-fill green" style="height:76px"></div><div>105k</div></div><div class="bar-item"><div class="bar-fill blue" style="height:88px"></div><div>120k</div></div><div class="bar-item"><div class="bar-fill" style="height:100px"></div><div>139k</div></div></div></div></div><div class="footer">10</div></section>
+
+<!-- SLIDE 11: ОД -->
+<section class="slide" id="s11"><div class="slide__inner"><div class="kicker">🚀 Потолок роста</div><h2>Операционный директор: доход 231k+</h2><div class="grid-2"><div class="card"><h3>Что делать?</h3><ul><li>Управлять чеком по сети</li><li>Внедрять систему на всех точках</li><li>Контролировать долю золота и ФОТ</li></ul></div><div class="visual-card"><div class="chart-modern"><div class="bar-item"><div class="bar-fill" style="height:70px"></div><div>120k</div></div><div class="bar-item"><div class="bar-fill green" style="height:108px"></div><div>165k</div></div><div class="bar-item"><div class="bar-fill blue" style="height:145px"></div><div>200k</div></div><div class="bar-item"><div class="bar-fill" style="height:185px; background:#f97316"></div><div>231k</div></div></div></div></div></div><div class="footer">11</div></section>
+
+<!-- SLIDE 12: запуск -->
+<section class="slide" id="s12"><div class="slide__inner"><div class="kicker">🚀 Старт</div><h2>Прозрачность и выгода для всех</h2><div class="grid-2"><div class="card"><h3>План внедрения</h3><ul><li>Утверждение списка «золотых» товаров</li><li>Ежедневные отчёты по чеку и доле золота</li><li>Обучение кассиров и управляющих</li><li>Пилот на 2 точках → масштабирование</li></ul></div><div class="card"><h3>Главная идея</h3><p><span class="accent">«Вы управляете своей зарплатой через продажи и чек»</span></p><p>Честная сделка: больше пользы компании → больше доход сотрудника.</p></div></div><div class="note" style="text-align:center; margin-top:28px">⚡ Новая система мотивации запускается в тестовом режиме через 2 недели. Готовьтесь увеличивать чеки и продажи золота!</div></div><div class="footer">12</div></section>
+
+<script>
+  (function(){
+    const slides = document.querySelectorAll('.slide');
+    const inners = document.querySelectorAll('.slide__inner');
+    const navLinks = document.querySelectorAll('.nav a');
+    const progressBar = document.getElementById('progressBar');
+    function updateProgress(){
+      let maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      let val = maxScroll ? (window.scrollY / maxScroll)*100 : 0;
+      progressBar.style.width = Math.min(100, Math.max(0,val)) + '%';
+    }
+    function updateActiveNav(){
+      let activeId = slides[0]?.id || '';
+      let marker = window.scrollY + window.innerHeight*0.4;
+      slides.forEach(slide => {
+        if(marker >= slide.offsetTop && marker < slide.offsetTop+slide.offsetHeight) activeId = slide.id;
+      });
+      navLinks.forEach(link => link.classList.toggle('active', link.dataset.target === activeId));
+    }
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry => {
+        if(entry.isIntersecting) entry.target.querySelector('.slide__inner')?.classList.add('visible');
+      });
+    },{threshold:0.2});
+    slides.forEach(s => observer.observe(s));
+    navLinks.forEach(link => link.addEventListener('click', (e)=>{
+      e.preventDefault();
+      let target = document.querySelector(link.getAttribute('href'));
+      if(target) target.scrollIntoView({behavior:'smooth'});
+    }));
+    window.addEventListener('scroll',()=>{updateProgress(); updateActiveNav();});
+    updateProgress(); updateActiveNav();
+    if(inners[0]) inners[0].classList.add('visible');
+
+    // кассир
+    const avgSlider = document.getElementById('avgCheckSlider');
+    const goldSlider = document.getElementById('goldSlider');
+    const checkValSpan = document.getElementById('checkValue');
+    const goldQtySpan = document.getElementById('goldQty');
+    const cashierBonusSpan = document.getElementById('cashierBonusDisplay');
+    function updateCashierBonus(){
+      let avgCheck = parseFloat(avgSlider.value);
+      let goldPerDay = parseFloat(goldSlider.value);
+      checkValSpan.innerText = avgCheck;
+      goldQtySpan.innerText = goldPerDay;
+      let bonusCheck = 0;
+      if(avgCheck >= 200) bonusCheck = 14000;
+      else if(avgCheck >= 180) bonusCheck = 7000;
+      let goldBonusMonthly = goldPerDay * 12 * 22;
+      let totalBonus = bonusCheck + goldBonusMonthly;
+      cashierBonusSpan.innerHTML = `💰 +${Math.round(totalBonus).toLocaleString()} ₽ бонус`;
+    }
+    avgSlider.addEventListener('input', updateCashierBonus);
+    goldSlider.addEventListener('input', updateCashierBonus);
+    updateCashierBonus();
+
+    // управляющий
+    const manCheck = document.getElementById('manCheck');
+    const manGold = document.getElementById('manGold');
+    const manGp = document.getElementById('manGp');
+    const manCheckVal = document.getElementById('manCheckVal');
+    const manGoldVal = document.getElementById('manGoldVal');
+    const manGpVal = document.getElementById('manGpVal');
+    const managerSalarySpan = document.getElementById('managerSalaryResult');
+    function calcManagerSalary(){
+      let check = parseFloat(manCheck.value);
+      let goldShare = parseFloat(manGold.value);
+      let gpGrowth = parseFloat(manGp.value);
+      manCheckVal.innerText = check;
+      manGoldVal.innerText = goldShare;
+      manGpVal.innerText = gpGrowth;
+      let bonusCheck = (check >= 200) ? 32000 : (check >= 180 ? 16000 : 0);
+      let bonusGold = (goldShare >= 35) ? 12000 : (goldShare >= 30 ? 9000 : 0);
+      let kpiSum = bonusCheck + bonusGold + 8000 + 4000; // fot+выручка допущены
+      let profitShare = gpGrowth * 1000 * 0.05;
+      let total = 80000 + kpiSum + profitShare;
+      managerSalarySpan.innerHTML = `${Math.round(total).toLocaleString()} ₽`;
+    }
+    manCheck.addEventListener('input', calcManagerSalary);
+    manGold.addEventListener('input', calcManagerSalary);
+    manGp.addEventListener('input', calcManagerSalary);
+    calcManagerSalary();
+
+    // фин эффект
+    const profitSlider = document.getElementById('profitCheckSlider');
+    const newCheckSpan = document.getElementById('newCheckSpan');
+    const extraRevenueSpan = document.getElementById('extraRevenue');
+    const extraGrossSpan = document.getElementById('extraGross');
+    const bonusEstSpan = document.getElementById('bonusEstimate');
+    const netEffectSpan = document.getElementById('netEffect');
+    function updateProfitImpact(){
+      let newCheck = parseFloat(profitSlider.value);
+      newCheckSpan.innerText = newCheck;
+      let baseRevenue = 15350000;
+      let multiplier = newCheck / 180;
+      let newRevenue = baseRevenue * multiplier;
+      let extraRevenue = newRevenue - baseRevenue;
+      let extraGross = extraRevenue * 0.23;
+      extraGross = Math.max(0, extraGross);
+      let bonusPool = Math.min(extraGross * 0.42, 450000);
+      bonusPool = Math.round(bonusPool / 1000) * 1000;
+      let net = extraGross - bonusPool;
+      extraRevenueSpan.innerText = '+' + Math.round(extraRevenue/1000).toLocaleString() + 'k';
+      extraGrossSpan.innerText = '+' + Math.round(extraGross/1000).toLocaleString() + 'k';
+      bonusEstSpan.innerText = Math.round(bonusPool/1000) + 'k';
+      netEffectSpan.innerText = '+' + Math.round(net/1000).toLocaleString() + 'k';
+    }
+    profitSlider.addEventListener('input', updateProfitImpact);
+    updateProfitImpact();
+  })();
+</script>
+</body>
+</html>
